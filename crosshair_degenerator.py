@@ -70,6 +70,9 @@ def gen_crosshair():
         # Big Length
         length = random.randint(21, 255)
         
+    # cl_crosshair_dynamic_maxdist_splitratio
+    maxdist_splitratio = round(random.uniform(0.10, 2.0), 2)
+    
     # cl_crosshair_gap
     # Gap Type Randomizer
     if random.randint(0, SMALL_CROSHAIR_CHANCE) == 0: 
@@ -112,6 +115,7 @@ def gen_crosshair():
         "cl_crosshairoutline_b": OUTLINE_RGBA[2],
         "cl_crosshairoutline_a": OUTLINE_RGBA[3],
         "cl_crosshair_thickness": thickness,
+        "cl_crosshair_dynamic_maxdist_splitratio": maxdist_splitratio,
         "cl_crosshairdot": dot,
         "cl_crosshair_length": length,
         "cl_crosshair_gap": gap,
