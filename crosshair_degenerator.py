@@ -194,7 +194,7 @@ def _spin_wrapper():
 
 
 if __name__ == "__main__":
-    print("Нажми 'P' чтобы запустить рулетку прицелов.")
-    print("(временные -> 'O', финальный -> 'I')")
+    print("Нажми 'P' чтобы запустить рулетку HUD.")
+    print("(не забудь прописать 'bind o \"exec random_crosshair.cfg'\")")
     with keyboard.Listener(on_press=on_press) as listener:
         listener.join()
