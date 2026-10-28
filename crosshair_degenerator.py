@@ -32,18 +32,12 @@ SMALL_CROSHAIR_CHANCE = 2  # Вероятность сгенерировать �
 
 # ---------- Генератор прицела ----------
 def gen_crosshair():
-    # cl_crosshairstyle
-    style = random.randint(0, 9)
-
     # cl_crosshaircolor_r, cl_crosshaircolor_g, cl_crosshaircolor_b, cl_crosshaircolor_a
     CROSSHAIR_RGBA = [random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), None]
     if random.choice([0, 1]) == 1:
         CROSSHAIR_RGBA[3] = random.randint(0, 255)
     else:
         CROSSHAIR_RGBA[3] = 255
-
-    # cl_crosshair_drawoutline
-    outline_type = random.choice([0, 1, 2])
 
     # cl_crosshairoutline_r, cl_crosshairoutline_g, cl_crosshairoutline_b, cl_crosshairoutline_a
     if random.choice([0, 1]) == 1:
@@ -54,13 +48,7 @@ def gen_crosshair():
             OUTLINE_RGBA[3] = random.randint(0, 255)
         else:
             OUTLINE_RGBA[3] = 255
-            
-    # cl_crosshair_thickness
-    thickness = random.randint(0, 32)
-    
-    # cl_crosshairdot
-    dot = random.choice([0, 1])
-    
+                   
     # cl_crosshair_length
     # Length Type Randomizer
     if random.randint(0, SMALL_CROSHAIR_CHANCE) == 0: 
@@ -69,10 +57,7 @@ def gen_crosshair():
     else:
         # Big Length
         length = random.randint(21, 255)
-        
-    # cl_crosshair_dynamic_maxdist_splitratio
-    maxdist_splitratio = round(random.uniform(0.10, 2.0), 2)
-    
+            
     # cl_crosshair_gap
     # Gap Type Randomizer
     if random.randint(0, SMALL_CROSHAIR_CHANCE) == 0: 
@@ -81,19 +66,7 @@ def gen_crosshair():
     else:
         # Big Gap
         gap = random.randint(21, 500)
-        
-    # cl_crosshair_t
-    t = random.choice([0, 1])
-    
-    # cl_ironsight_usecrosshaircolor
-    ironsight_color = random.choice([0, 1])
-    
-    # cl_ironsight_dot_scale
-    ironsight_dot_scale = round(random.uniform(0.10, 2.0), 2)
-    
-    # cl_crosshair_recoil
-    recoil = random.choice([0, 1])
-    
+                 
     # cl_crosshair_sniper_width
     # Sniper Width Type Randomizer
     if random.randint(0, SMALL_CROSHAIR_CHANCE) == 0:
@@ -104,26 +77,30 @@ def gen_crosshair():
         sniper_width = random.randint(20, 700)
 
     return {
-        "cl_crosshairstyle": style,
+        "cl_crosshairstyle": random.randint(0, 9),
         "cl_crosshaircolor_r": CROSSHAIR_RGBA[0],
         "cl_crosshaircolor_g": CROSSHAIR_RGBA[1],
         "cl_crosshaircolor_b": CROSSHAIR_RGBA[2],
         "cl_crosshaircolor_a": CROSSHAIR_RGBA[3],
-        "cl_crosshair_drawoutline": outline_type,
+        "cl_crosshair_drawoutline": random.choice([0, 1, 2]),
         "cl_crosshairoutline_r": OUTLINE_RGBA[0],
         "cl_crosshairoutline_g": OUTLINE_RGBA[1],
         "cl_crosshairoutline_b": OUTLINE_RGBA[2],
         "cl_crosshairoutline_a": OUTLINE_RGBA[3],
-        "cl_crosshair_thickness": thickness,
-        "cl_crosshair_dynamic_maxdist_splitratio": maxdist_splitratio,
-        "cl_crosshairdot": dot,
+        "cl_crosshair_thickness": random.randint(0, 32),
+        "cl_crosshairdot": random.choice([0, 1]),
         "cl_crosshair_length": length,
         "cl_crosshair_gap": gap,
-        "cl_crosshair_t": t,
-        "cl_ironsight_usecrosshaircolor": ironsight_color,
-        "cl_ironsight_dot_scale": ironsight_dot_scale,
-        "cl_crosshair_recoil": recoil,
+        "cl_crosshair_t": random.choice([0, 1]),
+        "cl_ironsight_usecrosshaircolor": random.choice([0, 1]),
+        "cl_ironsight_dot_scale": round(random.uniform(0.10, 2.0), 2),
+        "cl_crosshair_recoil": random.choice([0, 1]),
         "cl_crosshair_sniper_width": sniper_width,
+        "cl_crosshair_dynamic_maxdist_splitratio": round(random.uniform(0.10, 2.0), 2),
+        "cl_crosshair_dynamic_spread_limit": random.randint(0, 255),
+        "cl_crosshair_dynamic_splitalpha_innermod": random.choice([0, 1]),
+        "cl_crosshair_dynamic_splitalpha_outermod": random.choice([0, 1]),
+        "cl_crosshair_dynamic_splitdist": random.randint(0, 127),
     }
 
 # ---------- Генератор viewmodel ----------
