@@ -114,7 +114,12 @@ def gen_hud_and_radar():
         "cl_hud_radar_scale": round(random.uniform(0.8, 1.3), 2),
         "cl_radar_icon_scale_min": round(random.uniform(0.4, 1.25), 2),
         "cl_radar_rotate": random.choice([0, 1]),
-        "cl_radar_square_with_scoreboard": random.choice([0, 1])
+        "cl_radar_square_with_scoreboard": random.choice([0, 1]),
+        "cl_teamcounter_playercount_instead_of_avatars": random.choice([0, 1]),
+        "cl_weapon_selection_rarity_color": random.choice([0, 1]),
+        "cl_teammate_colors_show": random.randint(0, 2),
+        "cl_teamid_overhead_mode": random.randint(0, 3),
+        "cl_teamid_overhead_colors_show": random.choice([0, 1]),
     }
 
 # ---------- Запись в файл ----------
