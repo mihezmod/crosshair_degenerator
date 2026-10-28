@@ -96,7 +96,7 @@ def gen_viewmodel():
 
 def gen_hud_and_radar():
     return {
-        "hud_color": random.randint(0, 11),
+        "cl_hud_color": random.randint(0, 11),
         "hud_scaling": round(random.uniform(0.9, 1.1), 2),
         "cl_radar_always_centered": random.choice([0, 1]),
         "cl_radar_scale": round(random.uniform(0.25, 1), 2),
@@ -194,7 +194,8 @@ def _spin_wrapper():
 
 
 if __name__ == "__main__":
+    print("Файл должен лежать в папке cfg (steamapps\\common\\Counter-Strike Global Offensive\\game\\csgo\\cfg).")
+    print("Не забудь забиндить применение конфига (bind o \"exec random_crosshair.cfg\")")
     print("Нажми 'P' чтобы запустить рулетку HUD.")
-    print("(не забудь прописать 'bind o \"exec random_crosshair.cfg'\")")
     with keyboard.Listener(on_press=on_press) as listener:
         listener.join()
