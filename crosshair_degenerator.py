@@ -17,7 +17,7 @@ CONFIG_PATH = "random_crosshair.cfg"
 # ---------- Генераторы ----------
 def _gen_crosshair_body(playsound_index=None):
     """Общая логика генерации. playsound_index=None -> случайный трек."""
-    style = random.randint(0, 10)
+    style = random.randint(0, 9)
 
     CROSSHAIR_RGBA = [random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), None]
     if random.choice([0, 1]) == 1:
