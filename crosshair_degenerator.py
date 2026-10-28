@@ -25,22 +25,27 @@ PLAYSOUND = [
 
 APPLICATION_PATH = Path(sys.executable if getattr(sys, "frozen", False) else __file__).resolve()
 CONFIG_PATH = APPLICATION_PATH.parent / "random_crosshair.cfg"
-KEY_PRESS_DURATION = 0.05
-TRIGGER_KEY_VK = 0x50  # P
-APPLY_KEY = keyboard.KeyCode.from_vk(0x4F)  # O
+KEY_PRESS_DURATION = 0.01
+TRIGGER_KEY_VK = 0x50  # "P"-button
+APPLY_KEY = keyboard.KeyCode.from_vk(0x4F)  # "O"-button
+SMALL_CROSHAIR_CHANCE = 2  # Вероятность сгенерировать маленький прицел (больше => реже, 0 => всегда маленький)
 
 # ---------- Генератор прицела ----------
 def gen_crosshair():
+    # cl_crosshairstyle
     style = random.randint(0, 9)
 
+    # cl_crosshaircolor_r, cl_crosshaircolor_g, cl_crosshaircolor_b, cl_crosshaircolor_a
     CROSSHAIR_RGBA = [random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), None]
     if random.choice([0, 1]) == 1:
         CROSSHAIR_RGBA[3] = random.randint(0, 255)
     else:
         CROSSHAIR_RGBA[3] = 255
 
+    # cl_crosshair_drawoutline
     outline_type = random.choice([0, 1, 2])
 
+    # cl_crosshairoutline_r, cl_crosshairoutline_g, cl_crosshairoutline_b, cl_crosshairoutline_a
     if random.choice([0, 1]) == 1:
         OUTLINE_RGBA = list(CROSSHAIR_RGBA)
     else:
@@ -49,18 +54,50 @@ def gen_crosshair():
             OUTLINE_RGBA[3] = random.randint(0, 255)
         else:
             OUTLINE_RGBA[3] = 255
-
+            
+    # cl_crosshair_thickness
     thickness = random.randint(0, 32)
+    
+    # cl_crosshairdot
     dot = random.choice([0, 1])
-    length = random.randint(0, 255)
-    gap = random.randint(0, 500)
+    
+    # cl_crosshair_length
+    # Length Type Randomizer
+    if random.randint(0, SMALL_CROSHAIR_CHANCE) == 0: 
+        # Short Length
+        length = random.randint(0, 20)
+    else:
+        # Big Length
+        length = random.randint(21, 255)
+        
+    # cl_crosshair_gap
+    # Gap Type Randomizer
+    if random.randint(0, SMALL_CROSHAIR_CHANCE) == 0: 
+        # Small Gap
+        gap = random.randint(0, 20)
+    else:
+        # Big Gap
+        gap = random.randint(21, 500)
+        
+    # cl_crosshair_t
     t = random.choice([0, 1])
+    
+    # cl_ironsight_usecrosshaircolor
     ironsight_color = random.choice([0, 1])
+    
+    # cl_ironsight_dot_scale
     ironsight_dot_scale = round(random.uniform(0.10, 2.0), 2)
+    
+    # cl_crosshair_recoil
     recoil = random.choice([0, 1])
-    if random.choice([0, 1]) == 1:
+    
+    # cl_crosshair_sniper_width
+    # Sniper Width Type Randomizer
+    if random.randint(0, SMALL_CROSHAIR_CHANCE) == 0:
+        # Small Thickness
         sniper_width = random.randint(-1, 20)
     else:
+        # Big Thickness
         sniper_width = random.randint(20, 700)
 
     return {
@@ -145,13 +182,10 @@ def write_config(crosshair, viewmodel, hud_and_radar, playsound, path=CONFIG_PAT
 
 # ---------- "Рулетка" ----------
 def spin_reveal():
-    """
-    1) Крутит временные прицелы с затухающей частотой (как кейс в CS2).
-    2) В конце — финальный прицел со звуком открытия кейса'.
-    """
     # Сколько временных шагов и с каким затуханием
     # (суммарно ~ как открытие кейса: быстро -> медленно)
-    delays = [0.05, 0.05, 0.06, 0.07, 0.08, 0.10, 0.13, 0.17,
+    delays = [0.03, 0.03, 0.03, 0.04, 0.05, 0.05, 
+              0.06, 0.07, 0.08, 0.10, 0.13, 0.17, 
               0.22, 0.28, 0.36, 0.45, 0.55, 0.65]
 
     # Фаза 1: быстрые временные прицелы
@@ -173,8 +207,6 @@ def spin_reveal():
     press_key(APPLY_KEY)
 
     print("[OK] Основной прицел сгенерирован и записан.")
-    print("\n".join(f"{k} {v}" for k, v in crosshair.items()))
-    print("\n".join(f"{k} {v}" for k, v in playsound.items()))
 
 # ---------- Обработчик клавиш ----------
 _spinning = False
