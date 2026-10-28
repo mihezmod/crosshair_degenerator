@@ -44,12 +44,10 @@ def _gen_crosshair_body(playsound_index=None):
     ironsight_color = random.choice([0, 1])
     ironsight_dot_scale = round(random.uniform(0.10, 2.0), 2)
     recoil = random.choice([0, 1])
-    
     if random.choice([0, 1]) == 1:
         sniper_width = random.randint(-1, 20)
     else:
         sniper_width = random.randint(20, 700)
-    
 
     if playsound_index is None:
         playsound_index = random.randint(1, len(PLAYSOUND) - 1)
@@ -78,7 +76,6 @@ def _gen_crosshair_body(playsound_index=None):
         "cl_crosshair_sniper_width": sniper_width,
     }
 
-
 def gen_crosshair_temp():
     """Временный прицел (звук = первый)."""
     return _gen_crosshair_body(playsound_index=0)
@@ -97,9 +94,20 @@ def gen_viewmodel():
         "viewmodel_offset_z": round(random.uniform(-2.0, 2.0), 2),
     }
 
+def gen_hud_and_radar():
+    return {
+        "hud_color": random.randint(0, 11),
+        "hud_scaling": round(random.uniform(0.9, 1.1), 2),
+        "cl_radar_always_centered": random.choice([0, 1]),
+        "cl_radar_scale": round(random.uniform(0.25, 1), 2),
+        "cl_hud_radar_scale": round(random.uniform(0.8, 1.3), 2),
+        "cl_radar_icon_scale_min": round(random.uniform(0.4, 1.25), 2),
+        "cl_radar_rotate": random.choice([0, 1]),
+        "cl_radar_square_with_scoreboard": random.choice([0, 1])
+    }
 
 # ---------- Запись в файл ----------
-def write_config(crosshair, viewmodel, path=CONFIG_PATH):
+def write_config(crosshair, viewmodel, hud_and_radar, path=CONFIG_PATH):
     lines = ["// Auto-generated CS2 crosshair + viewmodel config", ""]
     lines.append("// --- Crosshair ---")
     for k, v in crosshair.items():
@@ -107,6 +115,10 @@ def write_config(crosshair, viewmodel, path=CONFIG_PATH):
     lines.append("")
     lines.append("// --- Viewmodel ---")
     for k, v in viewmodel.items():
+        lines.append(f"{k} {v}")
+    lines.append("")
+    lines.append("// --- HUD and Radar ---")
+    for k, v in hud_and_radar.items():
         lines.append(f"{k} {v}")
     lines.append("")
     with open(path, "w", encoding="utf-8") as f:
@@ -136,14 +148,16 @@ def spin_reveal():
     for d in delays:
         viewmodel = gen_viewmodel()
         crosshair = gen_crosshair_temp()
-        write_config(crosshair, viewmodel)
+        hud_and_radar = gen_hud_and_radar()
+        write_config(crosshair, viewmodel, hud_and_radar)
         press_key('o')
         time.sleep(d)
 
     # Фаза 2: финальный основной прицел
     viewmodel = gen_viewmodel()
     crosshair = gen_crosshair_final()
-    write_config(crosshair, viewmodel)
+    hud_and_radar = gen_hud_and_radar()
+    write_config(crosshair, viewmodel, hud_and_radar)
     press_key('o')
 
     print("[OK] Основной прицел сгенерирован и записан.")
