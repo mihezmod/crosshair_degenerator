@@ -23,7 +23,11 @@ PLAYSOUND = [
     r"play \sounds\ui\item_reveal6_ancient.vsnd_c",
 ]
 
-CONFIG_PATH = "random_crosshair.cfg"
+APPLICATION_PATH = Path(sys.executable if getattr(sys, "frozen", False) else __file__).resolve()
+CONFIG_PATH = APPLICATION_PATH.parent / "random_crosshair.cfg"
+KEY_PRESS_DURATION = 0.05
+TRIGGER_KEY_VK = 0x50  # P
+APPLY_KEY = keyboard.KeyCode.from_vk(0x4F)  # O
 
 # ---------- Генераторы ----------
 def _gen_crosshair_body(playsound_index=None):
@@ -64,8 +68,6 @@ def _gen_crosshair_body(playsound_index=None):
         playsound_index = random.randint(1, len(PLAYSOUND) - 1)
 
     return {
-        "snd_toolvolume": 0.3,
-        PLAYSOUND[playsound_index]: "",
         "cl_crosshairstyle": style,
         "cl_crosshaircolor_r": CROSSHAIR_RGBA[0],
         "cl_crosshaircolor_g": CROSSHAIR_RGBA[1],
@@ -85,6 +87,8 @@ def _gen_crosshair_body(playsound_index=None):
         "cl_ironsight_dot_scale": ironsight_dot_scale,
         "cl_crosshair_recoil": recoil,
         "cl_crosshair_sniper_width": sniper_width,
+        "snd_toolvolume": 0.3,
+        PLAYSOUND[playsound_index]: "",
     }
 
 def gen_crosshair_temp():
@@ -144,9 +148,12 @@ def write_config(crosshair, viewmodel, hud_and_radar, path=CONFIG_PATH):
 # ---------- Нажатия клавиш ----------
 kb = keyboard.Controller()
 
-def press_key(char):
-    kb.press(char)
-    kb.release(char)
+def press_key(key):
+    kb.press(key)
+    try:
+        time.sleep(KEY_PRESS_DURATION)
+    finally:
+        kb.release(key)
 
 
 # ---------- "Рулетка" ----------
@@ -166,7 +173,7 @@ def spin_reveal():
         crosshair = gen_crosshair_temp()
         hud_and_radar = gen_hud_and_radar()
         write_config(crosshair, viewmodel, hud_and_radar)
-        press_key('o')
+        press_key(APPLY_KEY)
         time.sleep(d)
 
     # Фаза 2: финальный основной прицел
@@ -174,7 +181,7 @@ def spin_reveal():
     crosshair = gen_crosshair_final()
     hud_and_radar = gen_hud_and_radar()
     write_config(crosshair, viewmodel, hud_and_radar)
-    press_key('o')
+    press_key(APPLY_KEY)
 
     print("[OK] Основной прицел сгенерирован и записан.")
     print("\n".join(f"{k} {v}" for k, v in crosshair.items()))
@@ -195,7 +202,7 @@ def _is_in_csgo_cfg(application_path):
 def on_press(key):
     global _spinning
     try:
-        if key == keyboard.KeyCode.from_char('p') or getattr(key, 'char', None) == 'p':
+        if getattr(key, 'vk', None) == TRIGGER_KEY_VK:
             with _lock:
                 if _spinning:
                     print("[!] Уже идёт генерация, подожди.")
