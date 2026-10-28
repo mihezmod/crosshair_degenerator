@@ -29,9 +29,8 @@ KEY_PRESS_DURATION = 0.05
 TRIGGER_KEY_VK = 0x50  # P
 APPLY_KEY = keyboard.KeyCode.from_vk(0x4F)  # O
 
-# ---------- Генераторы ----------
-def _gen_crosshair_body(playsound_index=None):
-    """Общая логика генерации. playsound_index=None -> случайный трек."""
+# ---------- Генератор прицела ----------
+def gen_crosshair():
     style = random.randint(0, 9)
 
     CROSSHAIR_RGBA = [random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), None]
@@ -64,9 +63,6 @@ def _gen_crosshair_body(playsound_index=None):
     else:
         sniper_width = random.randint(20, 700)
 
-    if playsound_index is None:
-        playsound_index = random.randint(1, len(PLAYSOUND) - 1)
-
     return {
         "cl_crosshairstyle": style,
         "cl_crosshaircolor_r": CROSSHAIR_RGBA[0],
@@ -87,20 +83,9 @@ def _gen_crosshair_body(playsound_index=None):
         "cl_ironsight_dot_scale": ironsight_dot_scale,
         "cl_crosshair_recoil": recoil,
         "cl_crosshair_sniper_width": sniper_width,
-        "snd_toolvolume": 0.3,
-        PLAYSOUND[playsound_index]: "",
     }
 
-def gen_crosshair_temp():
-    """Временный прицел (звук = первый)."""
-    return _gen_crosshair_body(playsound_index=0)
-
-
-def gen_crosshair_final():
-    """Основной прицел (случайный звук)."""
-    return _gen_crosshair_body(playsound_index=None)
-
-
+# ---------- Генератор viewmodel ----------
 def gen_viewmodel():
     return {
         "viewmodel_fov": random.randint(54, 68),
@@ -108,7 +93,8 @@ def gen_viewmodel():
         "viewmodel_offset_y": round(random.uniform(-2.0, 2.0), 2),
         "viewmodel_offset_z": round(random.uniform(-2.0, 2.0), 2),
     }
-
+    
+# ---------- Генератор HUD и радара ----------
 def gen_hud_and_radar():
     return {
         "cl_hud_color": random.randint(0, 11),
@@ -126,8 +112,17 @@ def gen_hud_and_radar():
         "cl_teamid_overhead_colors_show": random.choice([0, 1]),
     }
 
-# ---------- Запись в файл ----------
-def write_config(crosshair, viewmodel, hud_and_radar, path=CONFIG_PATH):
+# ---------- Звуковые эффекты ----------
+def gen_playsound(playsound_index=None):
+    if playsound_index is None:
+        playsound_index = random.randint(1, len(PLAYSOUND) - 1)
+    return {
+        "snd_toolvolume": 0.3,
+        PLAYSOUND[playsound_index]: "",
+    }
+
+# ---------- Создание конфига и запись на диск ----------
+def write_config(crosshair, viewmodel, hud_and_radar, playsound, path=CONFIG_PATH):
     lines = ["// Auto-generated CS2 crosshair + viewmodel config", ""]
     lines.append("// --- Crosshair ---")
     for k, v in crosshair.items():
@@ -141,20 +136,12 @@ def write_config(crosshair, viewmodel, hud_and_radar, path=CONFIG_PATH):
     for k, v in hud_and_radar.items():
         lines.append(f"{k} {v}")
     lines.append("")
+    lines.append("// --- Sound ---")
+    for k, v in playsound.items():
+        lines.append(f"{k} {v}")
+    lines.append("")
     with open(path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
-
-
-# ---------- Нажатия клавиш ----------
-kb = keyboard.Controller()
-
-def press_key(key):
-    kb.press(key)
-    try:
-        time.sleep(KEY_PRESS_DURATION)
-    finally:
-        kb.release(key)
-
 
 # ---------- "Рулетка" ----------
 def spin_reveal():
@@ -170,34 +157,36 @@ def spin_reveal():
     # Фаза 1: быстрые временные прицелы
     for d in delays:
         viewmodel = gen_viewmodel()
-        crosshair = gen_crosshair_temp()
+        crosshair = gen_crosshair()
         hud_and_radar = gen_hud_and_radar()
-        write_config(crosshair, viewmodel, hud_and_radar)
+        playsound = gen_playsound(playsound_index=0)
+        write_config(crosshair, viewmodel, hud_and_radar, playsound)
         press_key(APPLY_KEY)
         time.sleep(d)
 
     # Фаза 2: финальный основной прицел
     viewmodel = gen_viewmodel()
-    crosshair = gen_crosshair_final()
+    crosshair = gen_crosshair()
     hud_and_radar = gen_hud_and_radar()
-    write_config(crosshair, viewmodel, hud_and_radar)
+    playsound = gen_playsound()
+    write_config(crosshair, viewmodel, hud_and_radar, playsound)
     press_key(APPLY_KEY)
 
     print("[OK] Основной прицел сгенерирован и записан.")
     print("\n".join(f"{k} {v}" for k, v in crosshair.items()))
+    print("\n".join(f"{k} {v}" for k, v in playsound.items()))
 
-
-# ---------- Слушатель клавиш ----------
+# ---------- Обработчик клавиш ----------
 _spinning = False
 _lock = threading.Lock()
+kb = keyboard.Controller()
 
-
-def _is_in_csgo_cfg(application_path):
-    parent_parts = Path(application_path).resolve().parent.parts
-    expected_parts = tuple(part.casefold() for part in CSGO_CFG_PATH_PARTS)
-    actual_parts = tuple(part.casefold() for part in parent_parts[-len(expected_parts):])
-    return actual_parts == expected_parts
-
+def press_key(key):
+    kb.press(key)
+    try:
+        time.sleep(KEY_PRESS_DURATION)
+    finally:
+        kb.release(key)
 
 def on_press(key):
     global _spinning
@@ -212,7 +201,6 @@ def on_press(key):
     except Exception as e:
         print("Ошибка в обработчике:", e)
 
-
 def _spin_wrapper():
     global _spinning
     try:
@@ -223,6 +211,12 @@ def _spin_wrapper():
         with _lock:
             _spinning = False
 
+# ---------- Основная логика ----------
+def _is_in_csgo_cfg(application_path):
+    parent_parts = Path(application_path).resolve().parent.parts
+    expected_parts = tuple(part.casefold() for part in CSGO_CFG_PATH_PARTS)
+    actual_parts = tuple(part.casefold() for part in parent_parts[-len(expected_parts):])
+    return actual_parts == expected_parts
 
 if __name__ == "__main__":
     application_path = sys.executable if getattr(sys, "frozen", False) else __file__
