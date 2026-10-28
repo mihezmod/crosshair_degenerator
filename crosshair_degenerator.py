@@ -219,10 +219,10 @@ if __name__ == "__main__":
             "[!] Переместите приложение в папку "
             "steamapps\\common\\Counter-Strike Global Offensive\\game\\csgo\\cfg."
         )
+        input("Нажмите Enter для выхода...")
         raise SystemExit(1)
 
-    print("Файл должен лежать в папке cfg (steamapps\\common\\Counter-Strike Global Offensive\\game\\csgo\\cfg).")
-    print("Не забудь забиндить применение конфига (bind o \"exec random_crosshair.cfg\")")
+    print("Не забудь забиндить применение создаваемого конфига (bind o \"exec random_crosshair.cfg\")")
     print("Нажми 'P' чтобы запустить рулетку HUD.")
     with keyboard.Listener(on_press=on_press) as listener:
         listener.join()
