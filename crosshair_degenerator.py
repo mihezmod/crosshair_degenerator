@@ -4,7 +4,7 @@ import keyboard
 CROSSHAIR_RGBA = None
 OUTLINE_RGBA = None
 PLAYSOUND = [
-    r"play \sounds\ui\item_reveal3_rare.vsnd_c",
+    r"play \sounds\ui\csgo_ui_crate_item_scroll.vsnd_c",
     r"play \sounds\ui\item_reveal3_rare.vsnd_c",
     r"play \sounds\ui\item_reveal4_mythical.vsnd_c",
     r"play \sounds\ui\item_reveal5_legendary.vsnd_c",
@@ -46,7 +46,7 @@ def gen_crosshair():
 
     return {
         "snd_toolvolume": 0.3,
-        PLAYSOUND[random.randint(0, len(PLAYSOUND) - 1)]: "",
+        PLAYSOUND[random.randint(1, len(PLAYSOUND) - 1)]: "",
         "cl_crosshairstyle": style,
         "cl_crosshaircolor_r": CROSSHAIR_RGBA[0],
         "cl_crosshaircolor_g": CROSSHAIR_RGBA[1],
