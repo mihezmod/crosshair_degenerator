@@ -241,7 +241,8 @@ if __name__ == "__main__":
         input("Нажмите Enter для выхода...")
         raise SystemExit(1)
 
-    print("Не забудь забиндить применение генерируемого конфига (bind o \"exec random_crosshair.cfg\")")
+    print("Эта хуйня полностью сломает твой HUD, если ты еще не понял. Так что сделай его копию своего конфига.")
+    print("Для работы программы нужно вручную забиндить применение изменений (bind o \"exec random_crosshair.cfg\")")
     print("Нажми 'P' чтобы запустить рулетку HUD.")
     with keyboard.Listener(on_press=on_press) as listener:
         listener.join()
