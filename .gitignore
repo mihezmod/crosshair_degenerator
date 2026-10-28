@@ -1,0 +1,6 @@
+*
+!.gitignore
+!crosshair_degenerator.py
+!dist/
+dist/*
+!dist/crosshair_degenerator.exe

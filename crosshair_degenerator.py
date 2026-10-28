@@ -1,9 +1,20 @@
 import random
+import sys
 import time
 import threading
+from pathlib import Path
 from pynput import keyboard
 
 # ---------- Конфиг ----------
+CSGO_CFG_PATH_PARTS = (
+    "steamapps",
+    "common",
+    "Counter-Strike Global Offensive",
+    "game",
+    "csgo",
+    "cfg",
+)
+
 PLAYSOUND = [
     r"play \sounds\ui\csgo_ui_crate_item_scroll.vsnd_c",
     r"play \sounds\ui\item_reveal3_rare.vsnd_c",
@@ -168,6 +179,14 @@ def spin_reveal():
 _spinning = False
 _lock = threading.Lock()
 
+
+def _is_in_csgo_cfg(application_path):
+    parent_parts = Path(application_path).resolve().parent.parts
+    expected_parts = tuple(part.casefold() for part in CSGO_CFG_PATH_PARTS)
+    actual_parts = tuple(part.casefold() for part in parent_parts[-len(expected_parts):])
+    return actual_parts == expected_parts
+
+
 def on_press(key):
     global _spinning
     try:
@@ -194,6 +213,14 @@ def _spin_wrapper():
 
 
 if __name__ == "__main__":
+    application_path = sys.executable if getattr(sys, "frozen", False) else __file__
+    if not _is_in_csgo_cfg(application_path):
+        print(
+            "[!] Переместите приложение в папку "
+            "steamapps\\common\\Counter-Strike Global Offensive\\game\\csgo\\cfg."
+        )
+        raise SystemExit(1)
+
     print("Файл должен лежать в папке cfg (steamapps\\common\\Counter-Strike Global Offensive\\game\\csgo\\cfg).")
     print("Не забудь забиндить применение конфига (bind o \"exec random_crosshair.cfg\")")
     print("Нажми 'P' чтобы запустить рулетку HUD.")
