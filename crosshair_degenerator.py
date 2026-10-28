@@ -1,52 +1,62 @@
 import random
-import keyboard
+import time
+import threading
+from pynput import keyboard
 
-CROSSHAIR_RGBA = None
-OUTLINE_RGBA = None
+# ---------- Конфиг ----------
 PLAYSOUND = [
     r"play \sounds\ui\csgo_ui_crate_item_scroll.vsnd_c",
     r"play \sounds\ui\item_reveal3_rare.vsnd_c",
     r"play \sounds\ui\item_reveal4_mythical.vsnd_c",
     r"play \sounds\ui\item_reveal5_legendary.vsnd_c",
-    r"play \sounds\ui\item_reveal6_ancient.vsnd_c"
+    r"play \sounds\ui\item_reveal6_ancient.vsnd_c",
 ]
 
-def gen_crosshair():
-    style = random.randint(0, 10) #???
-    
+CONFIG_PATH = "random_crosshair.cfg"
+
+# ---------- Генераторы ----------
+def _gen_crosshair_body(playsound_index=None):
+    """Общая логика генерации. playsound_index=None -> случайный трек."""
+    style = random.randint(0, 10)
+
     CROSSHAIR_RGBA = [random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), None]
-    crosshair_transparency = random.choice([0, 1])
-    if crosshair_transparency == 1:
+    if random.choice([0, 1]) == 1:
         CROSSHAIR_RGBA[3] = random.randint(0, 255)
     else:
         CROSSHAIR_RGBA[3] = 255
-        
-    outline_type = random.choice([0, 1, 2]) #жестко
-    
-    outline_matches_crosshair = random.choice([0, 1])
-    if outline_matches_crosshair == 1:
-        OUTLINE_RGBA = CROSSHAIR_RGBA
+
+    outline_type = random.choice([0, 1, 2])
+
+    if random.choice([0, 1]) == 1:
+        OUTLINE_RGBA = list(CROSSHAIR_RGBA)
     else:
         OUTLINE_RGBA = [random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), None]
-        outline_transparency = random.choice([0, 1])
-        if outline_transparency == 1:
+        if random.choice([0, 1]) == 1:
             OUTLINE_RGBA[3] = random.randint(0, 255)
         else:
             OUTLINE_RGBA[3] = 255
 
-    thickness = random.randint(0, 32) #жестко
-    dot = random.choice([0, 1]) #жестко
-    length = random.randint(0, 255) #жестко
-    gap = random.randint(0, 500) #можно выше
+    thickness = random.randint(0, 32)
+    dot = random.choice([0, 1])
+    length = random.randint(0, 255)
+    gap = random.randint(0, 500)
     t = random.choice([0, 1])
     ironsight_color = random.choice([0, 1])
-    ironsight_dot_scale = round(random.uniform(0.10, 2.0), 2) #жестко
+    ironsight_dot_scale = round(random.uniform(0.10, 2.0), 2)
     recoil = random.choice([0, 1])
-    sniper_width = random.randint(-1, 700) #можно выше
+    
+    if random.choice([0, 1]) == 1:
+        sniper_width = random.randint(-1, 20)
+    else:
+        sniper_width = random.randint(20, 700)
+    
+
+    if playsound_index is None:
+        playsound_index = random.randint(1, len(PLAYSOUND) - 1)
 
     return {
         "snd_toolvolume": 0.3,
-        PLAYSOUND[random.randint(1, len(PLAYSOUND) - 1)]: "",
+        PLAYSOUND[playsound_index]: "",
         "cl_crosshairstyle": style,
         "cl_crosshaircolor_r": CROSSHAIR_RGBA[0],
         "cl_crosshaircolor_g": CROSSHAIR_RGBA[1],
@@ -68,6 +78,17 @@ def gen_crosshair():
         "cl_crosshair_sniper_width": sniper_width,
     }
 
+
+def gen_crosshair_temp():
+    """Временный прицел (звук = первый)."""
+    return _gen_crosshair_body(playsound_index=0)
+
+
+def gen_crosshair_final():
+    """Основной прицел (случайный звук)."""
+    return _gen_crosshair_body(playsound_index=None)
+
+
 def gen_viewmodel():
     return {
         "viewmodel_fov": random.randint(54, 68),
@@ -77,35 +98,89 @@ def gen_viewmodel():
     }
 
 
-def main():
-    print("Press 0 to exit")
-    print("Press P to degenerate")
+# ---------- Запись в файл ----------
+def write_config(crosshair, viewmodel, path=CONFIG_PATH):
+    lines = ["// Auto-generated CS2 crosshair + viewmodel config", ""]
+    lines.append("// --- Crosshair ---")
+    for k, v in crosshair.items():
+        lines.append(f"{k} {v}")
+    lines.append("")
+    lines.append("// --- Viewmodel ---")
+    for k, v in viewmodel.items():
+        lines.append(f"{k} {v}")
+    lines.append("")
+    with open(path, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines))
 
-    while 1==1:
-        if keyboard.is_pressed('0'):
-            break
-        if keyboard.is_pressed('P'):
-            crosshair = gen_crosshair()
-            viewmodel = gen_viewmodel()
 
-            lines = ["// Auto-generated CS2 crosshair + viewmodel config", ""]
-            lines.append("// --- Crosshair ---")
-            for k, v in crosshair.items():
-                lines.append(f"{k} {v}")
+# ---------- Нажатия клавиш ----------
+kb = keyboard.Controller()
 
-            lines.append("")
-            lines.append("// --- Viewmodel ---")
-            for k, v in viewmodel.items():
-                lines.append(f"{k} {v}")
+def press_key(char):
+    kb.press(char)
+    kb.release(char)
 
-            lines.append("")
 
-            with open("random_crosshair.cfg", "w", encoding="utf-8") as f:
-                f.write("\n".join(lines))
+# ---------- "Рулетка" ----------
+def spin_reveal():
+    """
+    1) Крутит временные прицелы с затухающей частотой (как кейс в CS2).
+    2) В конце — финальный прицел + нажатие 'i'.
+    """
+    # Сколько временных шагов и с каким затуханием
+    # (суммарно ~ как открытие кейса: быстро -> медленно)
+    delays = [0.05, 0.05, 0.06, 0.07, 0.08, 0.10, 0.13, 0.17,
+              0.22, 0.28, 0.36, 0.45, 0.55, 0.65]
 
-            print("Сгенерирован random_crosshair.cfg:")
-            print("\n".join(lines))
+    # Фаза 1: быстрые временные прицелы
+    for d in delays:
+        viewmodel = gen_viewmodel()
+        crosshair = gen_crosshair_temp()
+        write_config(crosshair, viewmodel)
+        press_key('o')
+        time.sleep(d)
+
+    # Фаза 2: финальный основной прицел
+    viewmodel = gen_viewmodel()
+    crosshair = gen_crosshair_final()
+    write_config(crosshair, viewmodel)
+    press_key('o')
+
+    print("[OK] Основной прицел сгенерирован и записан.")
+    print("\n".join(f"{k} {v}" for k, v in crosshair.items()))
+
+
+# ---------- Слушатель клавиш ----------
+_spinning = False
+_lock = threading.Lock()
+
+def on_press(key):
+    global _spinning
+    try:
+        if key == keyboard.KeyCode.from_char('p') or getattr(key, 'char', None) == 'p':
+            with _lock:
+                if _spinning:
+                    print("[!] Уже идёт генерация, подожди.")
+                    return
+                _spinning = True
+            threading.Thread(target=_spin_wrapper, daemon=True).start()
+    except Exception as e:
+        print("Ошибка в обработчике:", e)
+
+
+def _spin_wrapper():
+    global _spinning
+    try:
+        spin_reveal()
+    except Exception as e:
+        print("[!] Ошибка при генерации:", e)
+    finally:
+        with _lock:
+            _spinning = False
 
 
 if __name__ == "__main__":
-    main()
+    print("Нажми 'P' чтобы запустить рулетку прицелов.")
+    print("(временные -> 'O', финальный -> 'I')")
+    with keyboard.Listener(on_press=on_press) as listener:
+        listener.join()
