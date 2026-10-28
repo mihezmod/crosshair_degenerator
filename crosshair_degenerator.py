@@ -187,7 +187,7 @@ def spin_reveal():
     write_config(crosshair, viewmodel, hud_and_radar, playsound)
     press_key(APPLY_KEY)
 
-    print("[OK] Основной прицел сгенерирован и записан.")
+    print("[OK] Были сгенерированы конфиги после нажатия клавиши")
 
 # ---------- Обработчик клавиш ----------
 _spinning = False
@@ -207,12 +207,12 @@ def on_press(key):
         if getattr(key, 'vk', None) == TRIGGER_KEY_VK:
             with _lock:
                 if _spinning:
-                    print("[!] Уже идёт генерация, подожди.")
+                    print("[!] Повторное нажатие недуступно, генерация уже запущена")
                     return
                 _spinning = True
             threading.Thread(target=_spin_wrapper, daemon=True).start()
     except Exception as e:
-        print("Ошибка в обработчике:", e)
+        print("[!] Ошибка в обработчике:", e)
 
 def _spin_wrapper():
     global _spinning
@@ -235,14 +235,14 @@ if __name__ == "__main__":
     application_path = sys.executable if getattr(sys, "frozen", False) else __file__
     if not _is_in_csgo_cfg(application_path):
         print(
-            "[!] Переместите приложение в папку "
+            "[!] Приложение должно находиться в папке с конфигами CS:GO, например:\n"
             "steamapps\\common\\Counter-Strike Global Offensive\\game\\csgo\\cfg."
         )
-        input("Нажмите Enter для выхода...")
+        input("Нажми Enter для выхода...")
         raise SystemExit(1)
 
-    print("Эта хуйня полностью сломает твой HUD, если ты еще не понял. Так что сделай его копию своего конфига.")
-    print("Для работы программы нужно вручную забиндить применение изменений (bind o \"exec random_crosshair.cfg\")")
-    print("Нажми 'P' чтобы запустить рулетку HUD.")
+    print("[!] Эта хуйня полностью сломает твой HUD, если ты еще не понял. Так что сделай копию своего конфига.")
+    print("[!] Для работы программы нужно вручную забиндить применение изменений (bind o \"exec random_crosshair.cfg\")")
+    print("Нажми 'P' чтобы запустить рулетку HUD. \n")
     with keyboard.Listener(on_press=on_press) as listener:
         listener.join()
