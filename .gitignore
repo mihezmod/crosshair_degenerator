@@ -1,8 +1,5 @@
 *
 !.gitignore
 !crosshair_degenerator.py
-<<<<<<< HEAD
 !crosshair_encoder_decoder.py
-=======
-!crosshair_encoder_decoder.py
->>>>>>> 7ac03284276f982b4971a66577f32abc96968e2a
+!main.py
