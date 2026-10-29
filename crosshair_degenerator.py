@@ -102,7 +102,7 @@ def gen_crosshair():
         "cl_crosshair_dynamic_splitalpha_outermod": random.choice([0, 1]),
         "cl_crosshair_dynamic_splitdist": random.randint(0, 127),
     }
-
+    
 # ---------- Генератор viewmodel ----------
 def gen_viewmodel():
     return {
