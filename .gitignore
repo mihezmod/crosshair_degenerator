@@ -3,5 +3,5 @@
 !crosshair_degenerator.py
 !crosshair_encoder_decoder.py
 !main.py
+!src/*
 !config_saver.py
-!main.py
