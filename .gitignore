@@ -2,4 +2,5 @@
 !.gitignore
 !crosshair_degenerator.py
 !crosshair_encoder_decoder.py
+!config_saver.py
 !main.py

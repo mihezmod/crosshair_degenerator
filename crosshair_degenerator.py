@@ -30,6 +30,7 @@ KEY_PRESS_DURATION = 0.01
 TRIGGER_KEY_VK = 0x50  # "P"-button
 APPLY_KEY = keyboard.KeyCode.from_vk(0x4F)  # "O"-button
 SMALL_CROSHAIR_CHANCE = 2  # Вероятность сгенерировать маленький прицел (больше => реже, 0 => всегда маленький)
+NORMAL_HUD_CHANCE = 4  # Вероятность сгенерировать обычный HUD (больше => реже, 0 => всегда удобный)
 
 
 # ---------- Генератор прицела ----------
@@ -97,12 +98,27 @@ def gen_crosshair():
         "cl_ironsight_usecrosshaircolor": random.choice([0, 1]),
         "cl_ironsight_dot_scale": round(random.uniform(0.10, 2.0), 2),
         "cl_crosshair_recoil": random.choice([0, 1]),
-        "cl_crosshair_sniper_width": sniper_width,
         "cl_crosshair_dynamic_maxdist_splitratio": round(random.uniform(0.10, 2.0), 2),
         "cl_crosshair_dynamic_spread_limit": random.randint(0, 255),
         "cl_crosshair_dynamic_splitalpha_innermod": random.choice([0, 1]),
         "cl_crosshair_dynamic_splitalpha_outermod": random.choice([0, 1]),
         "cl_crosshair_dynamic_splitdist": random.randint(0, 127),
+        "cl_debounce_zoom": random.choice([0, 1]),
+		"cl_grenadecrosshair_decoy": random.choice([0, 1]),
+		"cl_grenadecrosshair_explosive": random.choice([0, 1]),
+		"cl_grenadecrosshair_fire": random.choice([0, 1]),
+		"cl_grenadecrosshair_flash": random.choice([0, 1]),
+		"cl_grenadecrosshair_keepusercrosshair": random.choice([0, 1]),
+		"cl_grenadecrosshair_smoke": random.choice([0, 1]),
+		"cl_grenadecrosshairdelay_decoy": round(random.uniform(0, 5), 2),
+		"cl_grenadecrosshairdelay_explosive": round(random.uniform(0, 5), 2),
+		"cl_grenadecrosshairdelay_fire": round(random.uniform(0, 5), 2),
+		"cl_grenadecrosshairdelay_flash": round(random.uniform(0, 5), 2),
+		"cl_grenadecrosshairdelay_smoke": round(random.uniform(0, 5), 2),
+        "cl_crosshair_sniper_width": sniper_width,
+        "cl_sniper_auto_rezoom": random.choice([0, 1]),
+        "cl_sniper_show_inaccuracy": random.choice([0, 1]),
+        "cl_sniper_delay_unscope ": random.choice([0, 1]),
     }
     
 # ---------- Генератор viewmodel ----------
@@ -116,20 +132,45 @@ def gen_viewmodel():
     
 # ---------- Генератор HUD и радара ----------
 def gen_hud_and_radar():
+    # HUD Safezone Randomizer
+    if random.randint(0, SMALL_CROSHAIR_CHANCE) == 0: 
+        safezonex = round(random.uniform(0.90, 1), 2)
+    else:
+        safezonex = round(random.uniform(0, 0.90), 2)
+    if random.randint(0, 1) == 0:
+        overhead_fade = round(random.uniform(0, 127), 2)
+    else:
+        overhead_fade = round(random.uniform(0, 1), 2)
+    
     return {
-        "cl_hud_color": random.randint(0, 11),
+        # HUD
+        "safezonex": safezonex,
+        "safezoney": round(random.uniform(0.80, 1), 2),
         "hud_scaling": round(random.uniform(0.9, 1.1), 2),
-        "cl_radar_always_centered": random.choice([0, 1]),
-        "cl_radar_scale": round(random.uniform(0.25, 1), 2),
-        "cl_hud_radar_scale": round(random.uniform(0.8, 1.3), 2),
-        "cl_radar_icon_scale_min": round(random.uniform(0.4, 1.25), 2),
-        "cl_radar_rotate": random.choice([0, 1]),
-        "cl_radar_square_with_scoreboard": random.choice([0, 1]),
+        "cl_hud_color": random.randint(0, 11),
         "cl_teamcounter_playercount_instead_of_avatars": random.choice([0, 1]),
         "cl_weapon_selection_rarity_color": random.choice([0, 1]),
-        "cl_teammate_colors_show": random.randint(0, 2),
+        "cl_teamid_overhead_fade_near_crosshair": overhead_fade,
         "cl_teamid_overhead_mode": random.randint(0, 3),
+        "cl_teammate_colors_show": random.randint(0, 2),
         "cl_teamid_overhead_colors_show": random.choice([0, 1]),
+        "cl_hide_avatar_images": random.choice([0, 1]),
+        "cl_sanitize_player_names": random.choice([0, 1]),
+        "r_drawtracers_firstperson": random.choice([0, 1]),
+        
+        # Radar
+        "cl_radar_always_centered": random.choice([0, 1]),
+        "cl_radar_rotate": random.choice([0, 1]),
+        "cl_hud_radar_map_additive": random.choice([0, 1]),
+        "cl_hud_radar_blur_background": random.choice([0, 1]),
+        "cl_hud_radar_background_alpha": round(random.uniform(0.0, 1.0), 2),
+        "cl_hud_radar_scale": round(random.uniform(0.8, 1.3), 2),
+        "cl_radar_scale": round(random.uniform(0.25, 1), 2),
+        "cl_radar_scale_alternate": round(random.uniform(0.25, 1), 2),
+        "cl_radar_scale_dynamic": random.choice([0, 1]),
+        "cl_radar_icon_scale_min": round(random.uniform(0.4, 1.25), 2),
+        "cl_radar_square_with_scoreboard": random.choice([0, 1]),
+        "cl_radar_square_always": random.choice([0, 1]),
     }
 
 # ---------- Звуковые эффекты ----------
