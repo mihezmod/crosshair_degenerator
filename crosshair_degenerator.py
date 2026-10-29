@@ -2,6 +2,7 @@ import random
 import sys
 import time
 import threading
+import flet as ft
 from pathlib import Path
 from pynput import keyboard
 
@@ -30,6 +31,7 @@ TRIGGER_KEY_VK = 0x50  # "P"-button
 APPLY_KEY = keyboard.KeyCode.from_vk(0x4F)  # "O"-button
 SMALL_CROSHAIR_CHANCE = 2  # Вероятность сгенерировать маленький прицел (больше => реже, 0 => всегда маленький)
 NORMAL_HUD_CHANCE = 4  # Вероятность сгенерировать обычный HUD (больше => реже, 0 => всегда удобный)
+
 
 # ---------- Генератор прицела ----------
 def gen_crosshair():
@@ -242,6 +244,7 @@ def press_key(key):
     finally:
         kb.release(key)
 
+# перенесено в main.py
 def on_press(key):
     global _spinning
     try:
@@ -255,15 +258,12 @@ def on_press(key):
     except Exception as e:
         print("[!] Ошибка в обработчике:", e)
 
+# вызов в main.py
 def _spin_wrapper():
-    global _spinning
     try:
         spin_reveal()
     except Exception as e:
         print("[!] Ошибка при генерации:", e)
-    finally:
-        with _lock:
-            _spinning = False
 
 # ---------- Основная логика ----------
 def _is_in_csgo_cfg(application_path):
@@ -271,6 +271,8 @@ def _is_in_csgo_cfg(application_path):
     expected_parts = tuple(part.casefold() for part in CSGO_CFG_PATH_PARTS)
     actual_parts = tuple(part.casefold() for part in parent_parts[-len(expected_parts):])
     return actual_parts == expected_parts
+
+
 
 if __name__ == "__main__":
     application_path = sys.executable if getattr(sys, "frozen", False) else __file__
@@ -287,3 +289,4 @@ if __name__ == "__main__":
     print("Нажми 'P' чтобы запустить рулетку HUD. \n")
     with keyboard.Listener(on_press=on_press) as listener:
         listener.join()
+    
