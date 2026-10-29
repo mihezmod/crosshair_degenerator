@@ -33,6 +33,7 @@ SMALL_CROSHAIR_CHANCE = 2  # Вероятность сгенерировать �
 NORMAL_HUD_CHANCE = 4  # Вероятность сгенерировать обычный HUD (больше => реже, 0 => всегда удобный)
 
 
+
 # ---------- Генератор прицела ----------
 def gen_crosshair():
     # cl_crosshaircolor_r, cl_crosshaircolor_g, cl_crosshaircolor_b, cl_crosshaircolor_a
