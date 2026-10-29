@@ -120,7 +120,7 @@ def gen_crosshair():
         "cl_sniper_show_inaccuracy": random.choice([0, 1]),
         "cl_sniper_delay_unscope ": random.choice([0, 1]),
     }
-
+    
 # ---------- Генератор viewmodel ----------
 def gen_viewmodel():
     return {
